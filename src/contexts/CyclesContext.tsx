@@ -11,6 +11,7 @@ import {
   addMarkCurrentCycleAsFinishedAction,
   addInterruptCycleAction,
 } from '../reducers/cycles/actions'
+import { differenceInSeconds } from 'date-fns'
 
 interface CreateCycleData {
   task: string
@@ -54,17 +55,22 @@ export function CyclesContextProvider({
     },
   )
 
-  const [amountSecondsPassed, setAmountSeconstsPassed] = useState(0)
+  const { cycles, activeCycleId } = cyclesState
+
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  const [amountSecondsPassed, setAmountSeconstsPassed] = useState(() => {
+    if (activeCycle) {
+      return differenceInSeconds(new Date(), new Date(activeCycle.startDate))
+    }
+    return 0
+  })
 
   useEffect(() => {
     const stateJSON = JSON.stringify(cyclesState)
 
     localStorage.setItem('@pomodoro-timer:cycles-state-1.0.0', stateJSON)
   }, [cyclesState])
-
-  const { cycles, activeCycleId } = cyclesState
-
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   function setSecondsPassed(seconds: number) {
     setAmountSeconstsPassed(seconds)
